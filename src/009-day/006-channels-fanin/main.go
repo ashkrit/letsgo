@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+const (
+	appleBasePrice  float64 = 157
+	googleBasePrice float64 = 1000
+)
+
 type StockTicks struct {
 	when   time.Time
 	symbol string
@@ -20,8 +25,8 @@ func main() {
 	googleTicks := make(chan float64)
 	allTicks := make(chan StockTicks)
 
-	go listenForGooglePrice(googleTicks)
-	go listenForApplePrice(appleTicks)
+	go listenForPrice(googleTicks, googleBasePrice)
+	go listenForPrice(appleTicks, appleBasePrice)
 	go fanInAllTicks(appleTicks, googleTicks, allTicks)
 
 	for ticks := range allTicks {
@@ -29,42 +34,32 @@ func main() {
 	}
 }
 
-func listenForApplePrice(appleTicks chan<- float64) {
+func listenForPrice(stockRicks chan<- float64, basePrice float64) {
 	func() {
 		for ticks := 0; ticks < 5; ticks++ {
-			appleTicks <- math.Round(rand.Float64() * 157)
+			stockRicks <- math.Round(rand.Float64() * basePrice)
 			time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
 		}
-		close(appleTicks)
-	}()
-}
-
-func listenForGooglePrice(googleTicks chan<- float64) {
-	func() {
-		for ticks := 0; ticks < 5; ticks++ {
-			googleTicks <- math.Round(rand.Float64() * 1000)
-			time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
-		}
-		close(googleTicks)
+		close(stockRicks)
 	}()
 }
 
 func fanInAllTicks(appleTicks <-chan float64, googleTicks <-chan float64, allTicks chan<- StockTicks) {
 	var countDown sync.WaitGroup
-	countDown.Add(2)
+	countDown.Add(2) // 2 stream are available
 
 	go func() {
 		for v := range appleTicks {
 			allTicks <- StockTicks{symbol: "AAPL", price: v, when: time.Now()}
 		}
-		countDown.Done()
+		countDown.Done() // Mark one stream as complete
 	}()
 
 	go func() {
 		for v := range googleTicks {
 			allTicks <- StockTicks{symbol: "GOOGL", price: v, when: time.Now()}
 		}
-		countDown.Done()
+		countDown.Done() // Mark one stream as completed
 	}()
 
 	countDown.Wait()
