@@ -36,9 +36,9 @@ func main() {
 
 func listenForPrice(stockRicks chan<- float64, basePrice float64) {
 	func() {
-		for ticks := 0; ticks < 5; ticks++ {
+		for ticks := 0; ticks < 500; ticks++ {
 			stockRicks <- math.Round(rand.Float64() * basePrice)
-			time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
+			//time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
 		}
 		close(stockRicks)
 	}()
