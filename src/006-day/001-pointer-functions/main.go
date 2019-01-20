@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
 )
 
 type person struct {
@@ -76,5 +75,4 @@ func main() {
 	swapNames(&p)
 	fmt.Println("Outside", p, &p)
 
-	sort.Ints()
 }
