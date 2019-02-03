@@ -33,4 +33,9 @@ func main() {
 	for index, value := range days {
 		fmt.Println("Index ", index, "Value ", value)
 	}
+
+	//For each but ignore index
+	for _, value := range days {
+		fmt.Println("Value ", value)
+	}
 }
